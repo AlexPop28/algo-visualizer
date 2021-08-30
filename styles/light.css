@@ -1,0 +1,14 @@
+body {
+  background-color: #D3D3D3;
+  color: #282828;
+}
+
+/*.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {*/
+/*  color: #fff;*/
+/*  background-color: #337ab7;*/
+/*}*/
+
+.nav-pills>li>a:focus, .nav-pills>li>a:hover {
+  color: #337ab7;
+  background-color: #F5F5F5;
+}

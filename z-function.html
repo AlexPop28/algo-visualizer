@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Z-function</title>
+  </head>
+  <body data-spy="scroll" data-target="#toc" data-offset="15">
+    <div id="id_navbar"></div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9">
+          <!--main content here-->
+          <h1 data-toc-text="ignore">Z-function</h1>
+          <h3 id="definition">Definition</h3>
+          <p>Suppose we are given a string \(S\) of length \(N\). The <strong>Z-function</strong> for this string is an array of length \(N\) where the \(i\)-th element is equal to the greatest number of characters starting from the position \(i\) that coincide with the first characters of \(S\).</p>
+
+          <p>In other words, \(z[i]\) is the length of the longest common prefix between \(S\) and the suffix of \(S\) starting at \(i\).</p>
+
+          <p><strong>Note.</strong> In this article, to avoid ambiguity, we assume \(0\)-based indexes; that is: the first character of \(S\) has index \(0\) and the last one has index \(N - 1\).</p>
+
+          <p>The first element of Z-function, \(z[0]\), is generally not well defined. In this article we will assume it is zero (although it doesn't change anything in the algorithm implementation).</p>
+
+          <p>This article presents an algorithm for calculating the Z-function in \(O(N)\) time, as well as various of its applications.</p>
+
+          <h3 id="examples">Examples</h3>
+
+          <p>For example, here are the values of the Z-function computed for different strings:</p>
+
+          <ul>
+          <li>"aaaaa" - \([0, 4, 3, 2, 1]\)</li>
+          <li>"aaabaab" - \([0, 2, 1, 0, 2, 1, 0]\)</li>
+          <li>"abacaba" - \([0, 0, 1, 0, 3, 0, 1]\)</li>
+          </ul>
+
+          <h3 id="trivial-algorithm">Trivial algorithm</h3>
+
+          <p>Formal definition can be represented in the following elementary \(O(N^2)\) implementation.</p>
+
+          <pre class="prettyprint linenums" style="font-size: 16px;">
+vector&lt;int&gt; z_function_trivial(string s) {
+  int n = (int)s.length();
+  vector&lt;int&gt; z(n);
+  for (int i = 1; i &lt; n; ++i)
+    while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]])
+      ++z[i];
+  return z;
+}</pre>
+
+          <p>We just iterate through every position \(i\) and update \(z[i]\) for each one of them, starting from \(z[i] = 0\) and incrementing it as long as we don't find a mismatch (and as long as we don't reach the end of the line).</p>
+
+          <p>Of course, this is not an efficient implementation. We will now show the construction of an efficient implementation.</p>
+
+          <h3 id="efficient-algorithm">Efficient algorithm</h3>
+
+          <p>To obtain an efficient algorithm we will compute the values of \(z[i]\) in turn from \(i = 1\) to \(N - 1\) but at the same time, when computing a new value, we'll try to make the best use possible of the previously computed values.</p>
+
+          <p>For the sake of brevity, let's call <strong>segment matches</strong> those substrings that coincide with a prefix of \(S\). For example, the value of the desired Z-function \(z[i]\) is the length of the segment match starting at position \(i\) (and that ends at position \(i + z[i] - 1\)).</p>
+
+          <p>To do this, we will keep <strong>the \([l, r]\) indices of the rightmost segment match</strong>. That is, among all detected segments we will keep the one that ends rightmost. In a way, the index \(r\) can be seen as the "boundary" to which our string \(S\) has been scanned by the algorithm; everything beyond that point is not yet known.</p>
+
+          <p>Then, if the current index (for which we have to compute the next value of the Z-function) is \(i\), we have one of two options:</p>
+
+          <ul>
+          <li><p>\(i > r\) -- the current position is <strong>outside</strong> of what we have already processed.</p>
+
+          <p>We will then compute \(z[i]\) with the <strong>trivial algorithm</strong> (that is, just comparing values one by one). Note that in the end, if \(z[i] > 0\), we'll have to update the indices of the rightmost segment, because it's guaranteed that the new \(r = i + z[i] - 1\) is better than the previous \(r\).</p></li>
+          <li><p>\(i \le r\) -- the current position is inside the current segment match \([l, r]\).</p>
+
+          <p>Then we can use the already calculated Z-values to "initialize" the value of \(z[i]\) to something (it sure is better than "starting from zero"), maybe even some big number.</p>
+
+          <p>For this, we observe that the substrings \(S[l \dots r]\) and \(S[0 \dots r-l]\) <strong>match</strong>. This means that as an initial approximation for \(z[i]\) we can take the value already computed for the corresponding segment \(S[0 \dots r-l]\), and that is \(z[i-l]\).</p>
+
+          <p>However, the value \(z[i-l]\) could be too large: when applied to position \(i\) it could exceed the index \(r\). This is not allowed because we know nothing about the characters to the right of \(r\): they may differ from those required.</p>
+
+          <p>Here is <strong>an example</strong> of a similar scenario:</p>
+
+          <p>\[ S = "aaaabaa" \]</p>
+
+          <p>When we get to the last position (\(i = 6\)), the current match segment will be \([5, 6]\). Position \(6\) will then match position \(6 - 5 = 1\), for which the value of the Z-function is \(z[1] = 3\). Obviously, we cannot initialize \(z[6]\) to \(3\), it would be completely incorrect. The maximum value we could initialize it to is \(1\) -- because it's the largest value that doesn't bring us beyond the index \(r\) of the match segment \([l, r]\).</p>
+
+          <p>Thus, as an <strong>initial approximation</strong> for \(z[i]\) we can safely take:</p>
+
+          <p>\[ z_0[i] = \min(r - i + 1,\; z[i-l]) \)</p>
+
+          <p>After having \(z[i]\) initialized to \(z_0[i]\), we try to increment \(z[i]\) by running the <strong>trivial algorithm</strong> -- because in general, after the border \(r\), we cannot know if the segment will continue to match or not.</p></li>
+          </ul>
+
+          <p>Thus, the whole algorithm is split in two cases, which differ only in <strong>the initial value</strong> of \(z[i]\): in the first case it's assumed to be zero, in the second case it is determined by the previously computed values (using the above formula). After that, both branches of this algorithm can be reduced to the implementation of <strong>the trivial algorithm</strong>, which starts immediately after we specify the initial value.</p>
+
+          <p>The algorithm turns out to be very simple. Despite the fact that on each iteration the trivial algorithm is run, we have made significant progress, having an algorithm that runs in linear time. Later on we will prove that the running time is linear.</p>
+
+          <h3 id="implementation">Implementation</h3>
+
+          <p>Implementation turns out to be rather laconic:</p>
+
+          <pre class="prettyprint linenums" style="font-size: 16px;">vector&lt;int&gt; z_function(string s) {
+  int n = (int)s.length();
+  vector&lt;int&gt; z(n);
+  for (int i = 1, l = 0, r = 0; i &lt; n; ++i) {
+    if (i &lt;= r)
+      z[i] = min (r - i + 1, z[i - l]);
+    while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]])
+      ++z[i];
+    if (i + z[i] - 1 &gt; r)
+      l = i, r = i + z[i] - 1;
+  }
+  return z;
+}</pre>
+
+          <h3 id="complexity">Asymptotic complexity</h3>
+
+          <p>We will prove that the above algorithm has a running time that is linear in the length of the string -- thus, it's \(O(N)\).</p>
+
+          <p>The proof is very simple.</p>
+
+          <p>We are interested in the nested <tt>while</tt> loop, since everything else is just a bunch of constant operations which sums up to \(O(N)\).</p>
+
+          <p>We will show that <strong>each iteration</strong> of the <tt>while</tt> loop will increase the right border \(r\) of the match segment.</p>
+
+          <p>To do that, we will consider both branches of the algorithm:</p>
+
+          <ul>
+          <li><p>\(i > r\)</p>
+
+          <p>In this case, either the <tt>while</tt> loop won't make any iteration (if \(S[0] \ne S[i]\)), or it will take a few iterations, starting at position \(i\), each time moving one character to the right. After that, the right border \(r\) will necessarily be updated.</p>
+
+          <p>So we have found that, when \(i > r\), each iteration of the <tt>while</tt> loop increases the value of the new \(r\) index.</p></li>
+          <li><p>\(i \le r\)</p>
+
+          <p>In this case, we initialize \(z[i]\) to a certain value \(z_0\) given by the above formula. Let's compare this initial value \(z_0\) to the value \(r - i + 1\). We will have three cases:</p>
+
+          <ul>
+          <li><p>\(z_0 &lt; r - i + 1\)</p>
+
+          <p>We prove that in this case no iteration of the <tt>while</tt> loop will take place.</p>
+
+          <p>It's easy to prove, for example, by contradiction: if the <tt>while</tt> loop made at least one iteration, it would mean that initial approximation \(z[i] = z_0\) was inaccurate (less than the match's actual length). But since \(S[l \dots r]\) and \(S[0 \dots r-l]\) are the same, this would imply that \(z[i-l]\) holds the wrong value (less than it should be).</p>
+
+          <p>Thus, since \(z[i-l]\) is correct and it is less than \(r - i + 1\), it follows that this value coincides with the required value \(z[i]\).</p></li>
+          <li><p>\(z_0 = r - i + 1\)</p>
+
+          <p>In this case, the <tt>while</tt> loop can make a few iterations, but each of them will lead to an increase in the value of the \(r\) index because we will start comparing from \(S[r+1]\), which will climb beyond the \([l, r]\) interval.</p></li>
+          <li><p>\(z_0 > r - i + 1\)</p>
+
+          <p>This option is impossible, by definition of \(z_0\).</p></li>
+          </ul></li>
+          </ul>
+
+          <p>So, we have proved that each iteration of the inner loop make the \(r\) pointer advance to the right. Since \(r\) can't be more than \(N-1\), this means that the inner loop won't make more than \(N-1\) iterations.</p>
+
+          <p>As the rest of the algorithm obviously works in \(O(N)\), we have proved that the whole algorithm for computing Z-functions runs in linear time.</p>
+
+
+
+          <!--end of main content-->
+        </div>
+        <!--tabel of contents-->
+        <div class="col-md-3"><nav id="toc"><ul id="toc-list" class="nav nav-pills nav-stacked" data-spy="affix"></ul></nav></div>
+      </div>
+    </div>
+
+
+    <!--scripts-->
+    <script src="scripts/init.js"></script>
+    <script src="scripts/darkmode.js"></script>
+    <script src="scripts/navbar.js"></script>
+    <script src="scripts/toc.js"></script>
+    <script>
+      setActive('id_navbar_z_function');
+    </script>
+  </body>
+</html>

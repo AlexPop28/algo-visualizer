@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Prefix function</title>
+  </head>
+  <body data-spy="scroll" data-target="#toc">
+    <div id="id_navbar"></div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9">
+          <!--main content here-->
+          <h1 data-toc-text="ignore">Prefix function. Knuth-Morris-Pratt algorithm</h1>
+
+          <h3 id="definition">Definition</h3>
+          <p>
+            You are given a string \( S \) of length \( N \). The
+            <b>prefix function</b> for this string is defined as
+            an array \( \pi \) of length \( N \), such that \( \pi[i] \) is the length
+            of the longest proper prefix of the substring \( S[0 \ldots i] \) which is
+            also a suffix of this substring. A proper prefix of a string is a
+            prefix that is not equal to the string itself. By definition \( \pi[i] = 0 \).
+          </p>
+          <p>
+            Mathematically the definition of the prefix function can be written as follows:
+            \[ \pi[i] = \max_ {k = 0 \dots i} \{k : S[0 \dots k-1] = S[i-(k-1) \dots i] \} \]
+          </p>
+          <p>
+            For example, the prefix function of string \( abcabcd \) is \( [0, 0, 0, 1, 2, 3, 0] \),
+            and the prefix function of string \( aabaaab \) is \( [0, 1, 0, 1, 2, 2, 3] \).
+          </p>
+
+          <h3 id="trivial-algorithm">Trivial algorithm</h3>
+          <p>An algorithm which follows the definition of prefix function exactly is the following:</p>
+          <pre class="prettyprint linenums" style="font-size: 16px;">
+vector&ltint&gt prefix_function(string s) {
+  int n = s.length();
+  vector&ltint&gt pi(n);
+  for (int i = 0; i < n; ++i)
+    for (int k = 0; k <= i; ++k)
+      if (s.substr(0, k) == s.substr(i - k + 1, k))
+        pi[i] = k;
+  return pi;
+}</pre>
+          <p>It is easy to see that its complexity is \( O(N^3) \), which has room for improvement.</p>
+
+          <h3 id="efficient-algorithm">Efficient algorithm</h3>
+          <p>
+            This algorithm was proposed by Knuth and Pratt and independently from them by Morris in 1977.
+            It was used as the main function of a substring search algorithm.
+          </p>
+
+          <h4 id="first-optimization" data-toc-text="ignore">First optimization</h4>
+          <p>
+            The first important observation is, that the values of the prefix function can only increase by at most one.
+          </p>
+          <p>
+            Indeed, otherwise, if \( \pi[i + 1] > \pi[i] + 1 \), then we can take
+            this suffix ending in position \( i + 1 \) with the length \( \pi[i + 1] \)
+            and remove the last character from it. We end up with a suffix ending in
+            position \( i \) with the length \( \pi[i + 1] - 1\), which is better
+            than \( \pi[i] \), i.e. we get a contradiction.
+          </p>
+          <p>
+            The following illustration shows this contradiction. The longest proper suffix at position \( i \) that also is a prefix is of length \( 2 \)
+            and at position \( i + 1 \) it is of length \( 4 \). Therefore the string \( s_0 ~ s_1 ~ s_2 ~ s_3 \) is equal to the string
+            \( s_{i-2} ~ s_{i-1} ~ s_i ~ s_{i+1} \), which means that also the strings \( s_0 ~ s_1 ~ s_2 \) and \( s_{i-2} ~ s_{i-1} ~ s_i \) are
+            equal, therefore \( \pi[i + 1] \) has to be \( 3 \).
+
+            \[ \underbrace{\overbrace{S_0 ~ S_1}^{\pi[i] = 2} ~
+            S_2 ~ S_3}_{\pi[i+1] = 4} ~ \dots ~ \underbrace{S_{i-2} ~
+            \overbrace{S_{i-1} ~ S_{i}}^{\pi[i] = 2} ~ S_{i+1}}_{\pi[i+1] = 4} \]
+
+            Thus when moving to the next position, the value of the prefix function can either increase by one, stay the same, or decrease by some amount.
+            This fact already allows us to reduce the complexity of the algorithm to \( O(N^2) \), because in one step the
+            prefix function can grow at most by one. In total the function can grow at most \( N \) steps, and therefore can also only decrease a total of
+            \( N \) steps. This means we only have to perform \( O(N) \) string comparisons, and reach the complexity \( O(N^2) \).
+          </p>
+
+          <h4 id="second-optimization" data-toc-text="ignore">Second optimization</h4>
+          <p>
+            Let's go further, we want to get rid of the string comparisons.
+            To accomplish this, we have to use all the information computed
+            in the previous steps.
+          </p>
+          <p>
+            So let us compute the value of the prefix function \( \pi \)
+            for \( i + 1 \). If \( s[i + 1] = s[\pi[i]] \), then we can
+            say with certainty that \( \pi[i + 1] = \pi[i] + 1 \),
+            since we already know that the suffix at position \( i \)
+            of length \( \pi[i] \) is equal to the prefix of length
+            \( \pi[i] \). This is illustrated again with an example.
+
+            \[ \underbrace{\overbrace{S_0 ~ S_1 ~ S_2}^{\pi[i]} ~
+            \overbrace{S_3}^{S_3 = S_{i+1}}}_{\pi[i+1] = \pi[i] + 1} ~
+            \dots ~ \underbrace{\overbrace{S_{i-2} ~ S_{i-1} ~ S_{i}}^{\pi[i]} ~
+            \overbrace{S_{i+1}}^{S_3 = S_i + 1}}_{\pi[i+1] = \pi[i] + 1} \]
+
+            If this is not the case, \( S[i + 1] \neq S[\pi[i]] \), then we need to try
+            a shorter string. In order to speed things up, we would like to immediately
+            move to the longest length \( j < \pi[i] \), such that the prefix property
+            in the position \( i \) holds, i.e.
+            \( S[0 \ldots j - 1] = S[i - j + 1 \ldots i]: \)
+            \[ \overbrace{\underbrace{S_0 ~ S_1}_j ~ S_2 ~ S_3}^{\pi[i]} ~ \dots ~ \overbrace{S_{i-3} ~ S_{i-2} ~ \underbrace{S_{i-1} ~ S_{i}}_j}^{\pi[i]} ~ S_{i+1} \]
+
+            Indeed, if we find such a length \(j\), then we again only need to compare
+            the characters \( S[i + 1] \) and \( S[j] \). If they are equal, then we can
+            assign \( \pi[i + 1] = j + 1 \). Otherwise we will need to find the largest value
+            smaller than \( j \), for which the prefix property holds, and so on. It can happen
+            that this goes until \( j = 0 \). If then \( S[i + 1] = S[0] \), we assign
+            \( \pi[i + 1] = 1\), and \( \pi[i + 1] = 0 \) otherwise.
+          </p>
+          <p>
+            So we already have a general scheme of the algorithm. The only question left is how do
+            we effectively find the lengths for \( j \). Let's recap: for the current length \( j \)
+            at the position \( i \) for which the prefix property holds, i.e.
+            \( S[0 \ldots j - 1] = S[i - j + 1 \ldots i] \), we want to find the greatest
+            \( k < j \), for which the prefix property holds.
+
+            \[ \overbrace{\underbrace{S_0 ~ S_1}_k ~ S_2 ~ S_3}^j ~ \dots ~ \overbrace{S_{i-3} ~ S_{i-2} ~ \underbrace{S_{i-1} ~ S_{i}}_k}^j ~S_{i+1} \]
+
+            The illustration shows, that this has to be the value of \( \pi[j - 1] \), which we
+            already calculated earlier.
+          </p>
+
+          <h4 id="final-algorithm" data-toc-text="ignore">Final algorithm</h4>
+          <p>
+            So we finally can build an algorithm that doesn't perform any string comparisons and
+            only performs \( O(N) \) actions.
+          </p>
+          <p>
+            Here is the final procedure:
+            <ul>
+              <li>
+                We compute the prefix values \( \pi[i] \) in a loop by iterating from \( i = 1 \) to
+                \( i = n - 1 \) ( \( \pi[0] \) just gets assigned with 0).
+              </li>
+              <li>
+                To calculate the current value \( \pi[i] \) we set the variable \( k \) denoting
+                the length of the best suffix for \( i - 1 \). Initially \( k = \pi[i - 1] \).
+              </li>
+              <li>
+                Test if the suffix of length \( j + 1 \) is also a prefix by comparing \( S[j] \) and
+                \( S[i] \). If they are equal then we assign \( \pi[i] = k + 1 \), otherwise we reduce
+                \( k \) to \( \pi[k - 1] \) and repeat this step.
+              </li>
+              <li>
+                If we have reached the length \( j = 0 \) and still don't have a match, then we assign
+                \( \pi[i] = 0 \) and go to the next index \( i + 1 \).
+              </li>
+            </ul>
+          </p>
+
+          <h3 id="simulation-heading">Simulation</h3>
+          <p>
+            To simulate the algorithm on any string, input it inside the text box underneath the code.
+            The first row of the table indicates the character that \(i\) points to.
+            The second row coresponds to the character that \(k\) points to.
+            The last row shows the values of the array \(pi\).
+            Use the buttons to navigate through the steps of the algorithm.
+          </p>
+          <pre class="prettyprint linenums" style="font-size: 16px;">
+vector&ltint&gt prefix_function(string s) {
+  int n = s.length();
+  vector&ltint&gt pi(n);
+  int k = 0;
+  for (int i = 1; i < n; ++i) {
+    while (k > 0 && s[k] != s[i])
+      k = pi[k - 1];
+    if (s[k] == s[i])
+      ++k;
+    pi[i] = k;
+  }
+  return pi;
+}</pre>
+
+          <div id="text"></div>
+          <div id="simulation"></div>
+          <ul class="pager">
+            <li class="previous"><a href="#" onclick="return prevStep();">Previous</a></li>
+            <li class="next"><a href="#" onclick="return nextStep();">Next</a></li>
+          </ul>
+
+          <form>
+            <div class="form-group row">
+              <div class="col">
+                <input type="text" class="form-control" id="string" placeholder="Input your string here" oninput="return initSimulation();">
+              </div>
+            </div>
+          </form>
+
+          <h3 id="pattern-matching">Pattern matching</h3>
+          <blockquote>
+            <p>
+              In computer science, pattern matching is the act of checking a given
+              sequence of tokens for the presence of the constituents of some pattern.
+            </p>
+            <footer>wikipedia.org</footer>
+          </blockquote>
+
+          <h4 data-toc-text="ignore">Task</h3>
+          <p>
+            Given a text \( T \) and a string \( S \) we want to find and display the positions
+            of all occurrences of the string \( S \) in the text \( T \).
+          </p>
+
+          <h4 data-toc-text="ignore">Approach</h3>
+          <p>
+            For convenience we denote with \( N \) the length of the string \( S \) and
+            with \( M \) the length of the text \( T \).
+          </p>
+          <p>
+            We will consider the string \( S + \# + T \) where \( \# \) is a separator that
+            appears neither in \( S \) nor in \( T \). Let us look at the values of
+            \( \pi \), the prefix function for this new string.
+            By definition, \( \pi[i] \) is the longest length
+            of a substring ending at position \( i \) that is also a prefix. Due to the separator,
+            the value of \( \pi[i] \) cannot exceed \( N \). However, if for some \( i \),
+            \( \pi[i] = N \), then it means that the string \( S \) is a substring ending at
+            position \( i \). Thus, we found a match!.
+
+          </p>
+
+          <!--end of main content-->
+        </div>
+        <div class="col-md-3"><nav id="toc"><ul id="toc-list" class="nav nav-pills nav-stacked" data-spy="affix"></ul></nav></div>
+      </div>
+    </div>
+
+
+    <!--scripts-->
+    <script src="scripts/init.js"></script>
+    <script src="scripts/darkmode.js"></script>
+    <script src="scripts/navbar.js"></script>
+    <script src="scripts/toc.js"></script>
+    <script src="scripts/prefix_function.js"></script>
+    <script>
+      setActive('id_navbar_prefix_function');
+    </script>
+  </body>
+</html>

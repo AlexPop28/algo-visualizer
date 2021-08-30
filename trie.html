@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Trie</title>
+  </head>
+  <body data-spy="scroll" data-target="#toc" data-offset="15">
+    <div id="id_navbar"></div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-9">
+          <!--main content here-->
+          <h1 data-toc-text="ignore">Trie</h1>
+
+          <h3 id="definition">Definition</h3>
+          <p>A <strong>trie</strong>, also called digital tree or prefix tree, is a type of search tree, a tree data structure used for locating specific keys from within a set. These keys are most often strings, with links between nodes defined not by the entire key, but by individual characters. In order to access a key (to recover its value, change it, or remove it), the trie is traversed depth-first, following the links between nodes, which represent each character in the key.
+          </p>
+
+          <h3 id="construction">Construction</h3>
+          <p>
+            Consider any path in the trie from the root to any vertex. If we write out the labels of all edges on the path, we get a string that corresponds to this path. For any vertex in the trie we will associate the string from the root to the vertex.
+          </p>
+          <p>Each vertex will also have a flag <tt>leaf</tt> which will be true, if any string from the given set corresponds to this vertex.</p>
+
+          <p>Accordingly to build a trie for a set of strings means to build a trie such that each <tt>leaf</tt> vertex will correspond to one string from the set, and conversely that each string of the set corresponds to one <tt>leaf</tt> vertex.</p>
+
+          <p>We will present an object-oriented implementation.</p>
+
+          <h4 data-toc-text="ignore">Representing a node</h4>
+
+          <p>First, we will define a structure for a node of the trie. Each node of the trie needs the links to its children and the <tt>leaf</tt> flag. We will avoid using pointers by remembering the index of the nodes in an array called <tt>t</tt>. If a node is not currently created we store the index \(-1\).</p>
+
+          <pre class="prettyprint linenums" style="font-size: 16px;">
+struct Node {
+  bool leaf = false;
+  int next[SIGMA];
+  Node() {
+    fill(next, next + SIGMA, -1);
+  }
+};</pre>
+
+          <p>The variable <tt>SIGMA</tt> is a constant denoting the size of the alphabet. For simplicity we will assume the strings contain lowercase english letters, so \(SIGMA = 26\).</p>
+
+          <h4 data-toc-text="ignore">Inserting a string</h4>
+
+          <p>To insert a new string in the trie we start at the root (node number \(0\)) and go down using the children links. If at some point there isn't a child created (its index is \(-1\)), we create it. In the end, we mark the corresponding node as a leaf.</p>
+
+<pre class="prettyprint linenums" style="font-size: 16px;">
+void Add(const string &s) {
+  int node = 0; // node 0 is the root
+  for (auto &ch : s) {
+    int c = ch - 'a';
+    if (t[node].next[c] == -1) { // we need to create a new node
+      t[node].next[c] = t.size();
+      t.emplace_back();
+    }
+    node = t[node].next[c];
+  }
+  t[node].leaf = true;
+}</pre>
+
+        <h4 data-toc-text="ignore">Final implementation</h4>
+        <p>By wrapping everything inside a <tt>struct</tt> we get the final implementation:</p>
+
+<pre class="prettyprint linenums" style="font-size: 16px;">
+struct Trie {
+  static const int SIGMA = 26;
+  struct Node {
+    bool leaf = false;
+    int next[SIGMA];
+    Node() {
+      fill(next, next + SIGMA, -1);
+    }
+  };
+
+  vector&lt;Node&gt; t = vector&lt;Node&gt;(1);
+
+  void Add(const string &s) {
+    int node = 0; // node 0 is the root
+    for (auto &ch : s) {
+      int c = ch - 'a';
+      if (t[node].next[c] == -1) { // we need to create a new node
+        t[node].next[c] = t.size();
+        t.emplace_back();
+      }
+      node = t[node].next[c];
+    }
+    t[node].leaf = true;
+  }
+};</pre>
+
+        <p>As you can see, the implementation turns out to be very easy and short, but what can we do with it?</p>
+
+        <h4 data-toc-text="ignore">Complexity</h4>
+        <p>The time and memory complexity of building the trie is \(O(L \cdot SIGMA)\) where \(L\) is the total length of the strings inserted in the trie. We can improve the memory complexity to \(O(L)\) by storing the links in a hash-table such as <tt>unordered_map&lt;char, int&gt;</tt> or in a <tt>map&lt;char, int&gt;</tt> with some time overhead due to their more complex implementations than a simple array.</p>
+
+        <h3 id="applications">Applications</h3>
+
+        <h4 data-toc-text="ignore">Autocomplete</h4>
+        <p>Suppose you start typing a word in a search engine or in a text editor. You will realize that often you get suggestions for continuing your text.</p>
+
+        <p>What happens is that the program uses a trie storing the commands or words you might be typing and descends the trie according to your input! Basically, it makes use of the fact that any node that is an ancestor in the trie of another one has a key that is the prefix of the second one.</p>
+
+        <h4 data-toc-text="ignore">Longest common prefix</h4>
+        <p>You are given a list of strings and some queries of the form "given a string \(S\), what is the longest common prefix of it with any of the strings in the list?"</p>
+
+        <p>A naive solution would be to compare \(S\) with all the given strings one by one and to take the maximum of all the intermediate restults. This algorithms would run in time linear to the total length of the strings in the list per query.</p>
+        <p>A better solution will of course use a trie. One can insert all the strings in the list in a trie before answering any queries. After this, we can descend the trie starting from the root according to the characters of \(S\). If at some point we would go to an inexistent node, we stop. We have arrived at the deepest node that corresponds to a prefix of at least one of the strings in the list and also of \(S\), so we have our answer! It might happen that all the required nodes are present in the trie. In that case, \(S\) is a prefix of some string in the list so the answer is \(|S|\). The complexity of answering a query is thus \(O(|S|)\), a big improvement! Keep in mind that building the trie takes \(O(L \cdot SIGMA)\) where \(L\) is the total length of the strings in the list so we sacrifice some precomputing time and memory in this approach.</p>
+
+
+          <!--end of main content-->
+        </div>
+        <!--tabel of contents-->
+        <div class="col-md-3"><nav id="toc"><ul id="toc-list" class="nav nav-pills nav-stacked" data-spy="affix"></ul></nav></div>
+      </div>
+    </div>
+
+
+    <!--scripts-->
+    <script src="scripts/init.js"></script>
+    <script src="scripts/darkmode.js"></script>
+    <script src="scripts/navbar.js"></script>
+    <script src="scripts/toc.js"></script>
+    <script>
+      setActive('id_navbar_trie');
+    </script>
+  </body>
+</html>
