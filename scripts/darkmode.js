@@ -1,5 +1,5 @@
 const toggleDarkMode = () => {
-  const styles = document.getElementById('theme');
+  const styles = document.getElementById("theme");
   let theme = localStorage.theme;
 
   if (theme == "dark") {
@@ -13,10 +13,10 @@ const toggleDarkMode = () => {
   localStorage.theme = theme;
 
   return false;
-}
+};
 
 const initTheme = () => {
-  const styles = document.getElementById('theme');
+  const styles = document.getElementById("theme");
   let theme = localStorage.theme;
 
   if (theme == null) {
@@ -27,5 +27,5 @@ const initTheme = () => {
     styles.href = "styles/light.css";
   }
   localStorage.theme = theme;
-}
+};
 initTheme();

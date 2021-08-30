@@ -1,5 +1,5 @@
 const navbarInit = () => {
-  let navbar = document.getElementById('id_navbar');
+  let navbar = document.getElementById("id_navbar");
   navbar.innerHTML = `
     <nav class="navbar navbar-fixed-top navbar-inverse">
       <div class="container-fluid">
@@ -17,7 +17,6 @@ const navbarInit = () => {
             <li id='id_navbar_prefix_function'><a href="prefix-function.html">Prefix function</a></li>
             <li id='id_navbar_z_function'><a href="z-function.html">Z-function</a></li>
             <li id='id_navbar_trie'><a href="trie.html">Trie</a></li>
-            <li id='id_navbar_aho_corasick'><a href="aho-corasick.html">Aho-Corasick</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li id='id_toggle_dark_mode'><a href="#" onclick="return toggleDarkMode();"><span class="glyphicon glyphicon-adjust"></a></span></li>
@@ -34,5 +33,4 @@ const setActive = (id) => {
   let atribute = document.createAttribute("class");
   atribute.value = "active";
   tab.setAttributeNode(atribute);
-}
-
+};

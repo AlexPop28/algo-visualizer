@@ -1,4 +1,4 @@
-html{
+html {
   scroll-behavior: smooth;
 }
 
@@ -17,7 +17,7 @@ td {
 
 .match {
   background-color: green;
-  color: #D3D3D3;
+  color: #d3d3d3;
 }
 
 .compare {
@@ -29,7 +29,13 @@ td {
   margin-top: -60px;
 }
 
-.L0, .L1, .L2, .L3,
-.L5, .L6, .L7, .L8 {
+.L0,
+.L1,
+.L2,
+.L3,
+.L5,
+.L6,
+.L7,
+.L8 {
   list-style-type: decimal !important;
 }
