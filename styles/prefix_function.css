@@ -1,0 +1,28 @@
+td {
+  text-align: center;
+  font-size: 20px;
+}
+
+.fail {
+  background-color: red;
+}
+
+.match {
+  background-color: green;
+  color: #d3d3d3;
+}
+
+.compare {
+  background-color: yellow;
+}
+
+.L0,
+.L1,
+.L2,
+.L3,
+.L5,
+.L6,
+.L7,
+.L8 {
+  list-style-type: decimal !important;
+}
