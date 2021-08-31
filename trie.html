@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <title>Trie</title>
+    <link rel="stylesheet" href="styles/trie.css">
   </head>
   <body data-spy="scroll" data-target="#toc" data-offset="15">
     <div id="id_navbar"></div>
 
     <div class="container">
       <div class="row">
-        <div class="col-md-9">
+        <div id="content-area" class="col-md-9">
           <!--main content here-->
           <h1 data-toc-text="ignore">Trie</h1>
 
@@ -59,8 +60,8 @@ void Add(const string &s) {
   t[node].leaf = true;
 }</pre>
 
-        <h4 data-toc-text="ignore">Final implementation</h4>
-        <p>By wrapping everything inside a <tt>struct</tt> we get the final implementation:</p>
+          <h4 data-toc-text="ignore">Final implementation</h4>
+          <p>By wrapping everything inside a <tt>struct</tt> we get the final implementation:</p>
 
 <pre class="prettyprint linenums" style="font-size: 16px;">
 struct Trie {
@@ -89,24 +90,33 @@ struct Trie {
   }
 };</pre>
 
-        <p>As you can see, the implementation turns out to be very easy and short, but what can we do with it?</p>
+          <p>As you can see, the implementation turns out to be very easy and short, but what can we do with it?</p>
 
-        <h4 data-toc-text="ignore">Complexity</h4>
-        <p>The time and memory complexity of building the trie is \(O(L \cdot SIGMA)\) where \(L\) is the total length of the strings inserted in the trie. We can improve the memory complexity to \(O(L)\) by storing the links in a hash-table such as <tt>unordered_map&lt;char, int&gt;</tt> or in a <tt>map&lt;char, int&gt;</tt> with some time overhead due to their more complex implementations than a simple array.</p>
+          <h4 data-toc-text="ignore">Complexity</h4>
+          <p>The time and memory complexity of building the trie is \(O(L \cdot SIGMA)\) where \(L\) is the total length of the strings inserted in the trie. We can improve the memory complexity to \(O(L)\) by storing the links in a hash-table such as <tt>unordered_map&lt;char, int&gt;</tt> or in a <tt>map&lt;char, int&gt;</tt> with some time overhead due to their more complex implementations than a simple array.</p>
 
-        <h3 id="applications">Applications</h3>
+          <h3 id="applications">Applications</h3>
 
-        <h4 data-toc-text="ignore">Autocomplete</h4>
-        <p>Suppose you start typing a word in a search engine or in a text editor. You will realize that often you get suggestions for continuing your text.</p>
+          <h4 data-toc-text="ignore">Autocomplete</h4>
+          <p>Suppose you start typing a word in a search engine or in a text editor. You will realize that often you get suggestions for continuing your text.</p>
 
-        <p>What happens is that the program uses a trie storing the commands or words you might be typing and descends the trie according to your input! Basically, it makes use of the fact that any node that is an ancestor in the trie of another one has a key that is the prefix of the second one.</p>
+          <p>What happens is that the program uses a trie storing the commands or words you might be typing and descends the trie according to your input! Basically, it makes use of the fact that any node that is an ancestor in the trie of another one has a key that is the prefix of the second one.</p>
 
-        <h4 data-toc-text="ignore">Longest common prefix</h4>
-        <p>You are given a list of strings and some queries of the form "given a string \(S\), what is the longest common prefix of it with any of the strings in the list?"</p>
+          <h4 data-toc-text="ignore">Longest common prefix</h4>
+          <p>You are given a list of strings and some queries of the form "given a string \(S\), what is the longest common prefix of it with any of the strings in the list?"</p>
 
-        <p>A naive solution would be to compare \(S\) with all the given strings one by one and to take the maximum of all the intermediate restults. This algorithms would run in time linear to the total length of the strings in the list per query.</p>
-        <p>A better solution will of course use a trie. One can insert all the strings in the list in a trie before answering any queries. After this, we can descend the trie starting from the root according to the characters of \(S\). If at some point we would go to an inexistent node, we stop. We have arrived at the deepest node that corresponds to a prefix of at least one of the strings in the list and also of \(S\), so we have our answer! It might happen that all the required nodes are present in the trie. In that case, \(S\) is a prefix of some string in the list so the answer is \(|S|\). The complexity of answering a query is thus \(O(|S|)\), a big improvement! Keep in mind that building the trie takes \(O(L \cdot SIGMA)\) where \(L\) is the total length of the strings in the list so we sacrifice some precomputing time and memory in this approach.</p>
+          <p>A naive solution would be to compare \(S\) with all the given strings one by one and to take the maximum of all the intermediate restults. This algorithms would run in time linear to the total length of the strings in the list per query.</p>
+          <p>A better solution will of course use a trie. One can insert all the strings in the list in a trie before answering any queries. After this, we can descend the trie starting from the root according to the characters of \(S\). If at some point we would go to an inexistent node, we stop. We have arrived at the deepest node that corresponds to a prefix of at least one of the strings in the list and also of \(S\), so we have our answer! It might happen that all the required nodes are present in the trie. In that case, \(S\) is a prefix of some string in the list so the answer is \(|S|\). The complexity of answering a query is thus \(O(|S|)\), a big improvement! Keep in mind that building the trie takes \(O(L \cdot SIGMA)\) where \(L\) is the total length of the strings in the list so we sacrifice some precomputing time and memory in this approach.</p>
 
+          <h3 id="visualization">Visualization</h3>
+          <div class="row">
+            <div class="col-sm-4">
+              <textarea id="input"></textarea>
+            </div>
+            <div class="col-sm-8">
+              <canvas id="canvas"></canvas>
+            </div>
+          </div>
 
           <!--end of main content-->
         </div>
@@ -121,6 +131,7 @@ struct Trie {
     <script src="scripts/darkmode.js"></script>
     <script src="scripts/navbar.js"></script>
     <script src="scripts/toc.js"></script>
+    <script src="scripts/trie.js"></script>
     <script>
       setActive('id_navbar_trie');
     </script>
