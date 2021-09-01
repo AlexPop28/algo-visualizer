@@ -1,5 +1,17 @@
-const canvas = document.getElementById("canvas");
-const context = canvas.getContext("2d");
+class TrieNode {
+  constructor() {
+    this.next = [];
+  }
+
+  insert = (string, index) => {
+    if (index == string.length) return;
+    const label = string.charCodeAt(index);
+    if (this.next[label] === undefined) {
+      this.next[label] = new TrieNode();
+    }
+    this.next[label].insert(string, index + 1);
+  };
+}
 
 const getStrings = (text) => {
   text += "\n";
@@ -19,5 +31,11 @@ const getStrings = (text) => {
 const handleInputChange = () => {
   const input_text = document.getElementById("input").value;
   const strings = getStrings(input_text);
-  console.log(strings);
+
+  const root = new TrieNode();
+  for (let string of strings) {
+    root.insert(string, 0);
+  }
 };
+
+document.getElementById("input").onkeyup = () => handleInputChange();
