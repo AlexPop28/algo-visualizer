@@ -31,7 +31,8 @@ export default class TreePlotter {
     this.precomputeProps(root);
 
     root.y = nodeDiameter();
-    this.computeCoordinates(root);
+    this.computeInitialCoordinates(root);
+    this.computeFinalCoordinates(root);
   }
 
   precomputeProps = (node) => {
@@ -49,11 +50,11 @@ export default class TreePlotter {
     });
   };
 
-  computeCoordinates = (node) => {
+  computeInitialCoordinates = (node) => {
     // computes preliminary (x, y) values for nodes
     node.next.forEach((child) => {
       child.y = node.y + this.nodeDiameter() + this.nodeSpacing(); // space between levels of the tree
-      this.computeCoordinates(child);
+      this.computeInitialCoordinates(child);
     });
 
     if (node.left_sibling) {
@@ -163,6 +164,14 @@ export default class TreePlotter {
 
     node.next.forEach((child) => {
       this.getBorder(child, border, compare, mod_sum + node.mod, level + 1);
+    });
+  };
+
+  computeFinalCoordinates = (node, sum = 0) => {
+    // computes the final x value for nodes
+    node.x += sum;
+    node.next.forEach((child) => {
+      this.computeFinalCoordinates(child, sum + node.mod);
     });
   };
 }

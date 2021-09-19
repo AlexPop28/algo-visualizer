@@ -37,15 +37,15 @@ class TrieNode {
     this.next[label].insert(string, index + 1);
   };
 
-  render = (canvas, sum = 0) => {
+  render = (canvas) => {
     canvas.drawCircle(
-      this.x + sum,
+      this.x,
       this.y,
       nodeDiameter() / 2,
       getComputedStyle(document.body).color
     );
     this.next.forEach((child) => {
-      child.render(canvas, sum + this.mod);
+      child.render(canvas);
     });
   };
 }
