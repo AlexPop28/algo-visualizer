@@ -111,13 +111,36 @@ struct Trie {
           <h3 id="visualization">Visualization</h3>
           <div class="row">
             <div class="col-sm-4">
-              <textarea id="input" placeholder="Input each string on a separate line"></textarea>
+              <p>Node diameter:</p>
+            </div>
+            <div class="col-sm-8">
+              <input type="range" value="15" id="node-diameter">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4">
+              <p>Node spacing:</p>
+            </div>
+            <div class="col-sm-8">
+              <input type="range" value="15" id="node-spacing">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4">
+              <p>Label size:</p>
+            </div>
+            <div class="col-sm-8">
+              <input type="range" value="14" id="label-size">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4">
+              <textarea id="input-text" placeholder="Input each string on a separate line"></textarea>
             </div>
             <div class="col-sm-8">
               <canvas id="canvas"></canvas>
             </div>
           </div>
-
           <!--end of main content-->
         </div>
         <!--tabel of contents-->
@@ -131,7 +154,7 @@ struct Trie {
     <script src="scripts/darkmode.js"></script>
     <script src="scripts/navbar.js"></script>
     <script src="scripts/toc.js"></script>
-    <script src="scripts/trie.js"></script>
+    <script src="scripts/trie.js" type="module"></script>
     <script>
       setActive('id_navbar_trie');
     </script>
